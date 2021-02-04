@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="demo.persistence.ext.mapper.JobTitleExtMapper">
+
+  <select id="page" parameterType="com.github.smallcham.plugin.page.support.RowBounds"
+          resultMap="demo.persistence.auto.mapper.JobTitleMapper.BaseResultMap">
+    select * from job_title
+    <where>
+      access_id = #{v.accessId}
+      <if test="v.name != null and v.name != ''">
+        and (name like CONCAT('%', #{v.name}, '%') or code like CONCAT('%', #{v.name}, '%'))
+      </if>
+      <if test="v.isEnabled != null">
+        and is_enabled = #{v.isEnabled}
+      </if>
+      <if test="v.isDelete != null">
+        and is_delete= #{v.isDelete}
+      </if>
+    </where>
+    order by sort
+  </select>
+
+</mapper>
