@@ -1,5 +1,7 @@
 package demo.facade.api;
 
+import demo.biz.enums.DeleteEnums;
+import demo.biz.enums.EnabledEnums;
 import demo.biz.enums.QrCodeSCANEnums;
 import demo.biz.service.JobTitleService;
 import com.github.smallcham.plugin.page.support.Page;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import demo.persistence.auto.model.JobTitle;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 @Slf4j
 @RestController
@@ -75,10 +78,39 @@ public class JobTitleController {
         return ResultData.getSuccessData(jobTitleService.redis());
     }
 
-    @ApiOperation(value = "操作redis", notes = "操作redis")
+    @ApiOperation(value = "操作微信", notes = "操作微信")
     @PostMapping("/test/wechat")
     public ResultData<InvitationUrlRsp> wechat(@RequestBody InvitationDoctorReq req) {
         return ResultData.getSuccessData(weChatService.createQrcode(QrCodeSCANEnums.INVITATION_DOCTOR, req.getOperatePrimaryId()));
+    }
+
+    @ApiOperation(value = "操作异步", notes = "操作异步")
+    @PostMapping("/test/callable")
+    public Callable<ResultData> test() {
+        long currentTimeMillis = System.currentTimeMillis();
+        Callable<ResultData> result = new Callable<ResultData>() {
+
+            @Override
+            public ResultData call() throws Exception {
+                log.info("副线程开始！");
+                Thread.sleep(3000);
+                log.info("副线程结束！");
+
+                JobTitle model = new JobTitle();
+                model.setCode("10000");
+                model.setName("异步");
+                model.setIsDelete(DeleteEnums.NODELETE.getKey());
+                model.setIsEnabled(EnabledEnums.ENABLE.getKey());
+                model.setAccessId(0L);
+                model.setSort(0);
+                jobTitleService.insert(model);
+                return ResultData.SUCCESS;
+            }
+
+        };
+        long currentTimeMillis1 = System.currentTimeMillis();
+        System.out.println("task任务总耗时:" + (currentTimeMillis1-currentTimeMillis) + "ms");
+        return result;
     }
 
 }
